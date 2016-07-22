@@ -5,17 +5,28 @@ import React from 'react'
 import {
   StyleSheet,
   View,
-  Text
+  Text,
+  TouchableHighlight,
+  Component
 } from 'react-native'
 
 // import { Container, Content, Card, CardItem, Text, Icon } from 'native-base'
 import Swiper from 'react-native-swiper'
 
+
 var Dimensions = require('Dimensions');
 var windowSize = Dimensions.get('window');
 
-const TourView = React.createClass({
-  render: function() {
+class TourView extends React.Component{
+
+  _signIn = () =>{
+    this.props.navigator.push({
+      name: 'login',
+      props: {exampleProp: 25}
+    })
+  }
+
+  render() {
     return (
       <Swiper style={styles.wrapper} showsButtons={false}>
         <View style={styles.slide1}>
@@ -25,12 +36,14 @@ const TourView = React.createClass({
           <Text style={styles.text}>Beautiful</Text>
         </View>
         <View style={styles.slide3}>
-          <Text style={styles.text}>And simple</Text>
+          <TouchableHighlight onPress={this._signIn} style={styles.signin}>
+              <Text style={styles.text}>Sign In</Text>
+          </TouchableHighlight>
         </View>
       </Swiper>
     );
   }
-});
+}
 
 var styles = StyleSheet.create({
   wrapper: {
@@ -57,6 +70,12 @@ var styles = StyleSheet.create({
     color: '#fff',
     fontSize: 30,
     fontWeight: 'bold',
-  }
+  },
+  signin: {
+      backgroundColor: '#FF3366',
+      padding: 20,
+      alignItems: 'center'
+  },
+
 })
 module.exports = TourView

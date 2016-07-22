@@ -1,6 +1,6 @@
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import Challenger from '../components/challenger'
+import Challenger from '../components/challengerRoot'
 import * as ItemsActions from '../actions/items'
 
 function mapStateToProps(state) {
