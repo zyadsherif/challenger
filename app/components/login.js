@@ -1,6 +1,8 @@
 import React, { Component} from 'react'
 import { StyleSheet, Image, View, TextInput, Text, TouchableHighlight, Modal } from 'react-native'
 import Dimensions from 'Dimensions'
+import { Container, Content, Header, Title, Button} from 'native-base'
+import Icon from 'react-native-vector-icons/FontAwesome'
 
 
 import Firebase from 'firebase'
@@ -8,7 +10,13 @@ import config from '../../config'
 
 import SignupView from './signup'
 
-const provider = new firebase.auth.GoogleAuthProvider()
+const FBSDK = require('react-native-fbsdk');
+const {
+  LoginManager,
+  AccessToken
+} = FBSDK;
+
+const provider = firebase.auth.FacebookAuthProvider;
 var windowSize = Dimensions.get('window')
 
 
@@ -36,6 +44,62 @@ class LoginView extends Component {
     this.props.navigator.immediatelyResetRouteStack([{'name': 'mainTabs'}])
   }
 
+  _fbSignIn = () => {
+    var that = this;
+    LoginManager.logInWithReadPermissions(['public_profile']).then(
+      function(result) {
+        if (result.isCancelled) {
+          alert('Login cancelled');
+        } else {
+          console.log(result.grantedPermissions.toString());
+          AccessToken.getCurrentAccessToken()
+          .then(accessTokenData => {
+              const credential = provider.credential(accessTokenData.accessToken);
+              Firebase.auth().signInWithCredential(credential).then(function(data){
+                that._signIn();
+              });
+          })
+          .then(credData => {
+              console.log(credData);
+          })
+          .catch(err => {
+              console.log(err);
+          });
+        }
+      },
+      function(error) {
+        alert('Login fail with error: ' + error);
+      }
+    );
+  }
+
+  _firbaseFBSignIn = (result) =>{
+    // var customToken = firebase.auth().credentialWithAccessToken(result.accessToken);
+    firebase.auth().credentialWithAccessToken(result.accessToken).catch(function(error) {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // ...
+    });
+    // firebase.auth().signInWithCredential(result).catch(function(error) {
+    //   // Handle Errors here.
+    //   var errorCode = error.code;
+    //   var errorMessage = error.message;
+    //   // The email of the user's account used.
+    //   var email = error.email;
+    //   // The firebase.auth.AuthCredential type that was used.
+    //   var credential = error.credential;
+    //   // [START_EXCLUDE]
+    //   if (errorCode === 'auth/account-exists-with-different-credential') {
+    //     alert('You have already signed up with a different auth provider for that email.');
+    //     // If you are using multiple auth providers on your app you should handle linking
+    //     // the user's accounts here.
+    //   } else {
+    //     console.error(error);
+    //   }
+    // })
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -44,34 +108,15 @@ class LoginView extends Component {
             <Image style={styles.mark} source={{uri: 'https://i.imgur.com/da4G0Io.png'}} />
         </View>
         <View style={styles.inputs}>
-          <View style={styles.inputContainer, styles.inputUsername}>
-            <Text style={styles.whiteFont}>
-              Username
-            </Text>
-            <TextInput
-              keyboardType={'email-address'}
-              style={[styles.input, styles.whiteFont]}
-              value={this.state.username}
-              onChangeText={(text) => this.setState({username: text})}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.whiteFont}>
-              Password
-            </Text>
-            <TextInput
-              password={true}
-              style={[styles.input, styles.whiteFont]}
-              value={this.state.password}
-              onChangeText={(text) => this.setState({password: text})}
-            />
-          </View>
-          <TouchableHighlight onPress={this._signIn} style={styles.signin}>
-            <Text style={styles.whiteFont}>Sign In</Text>
-          </TouchableHighlight>
-          <View style={styles.signup}>
-            <Text style={styles.greyFont}>Don't have an account?<Text onPress={this._setModalVisible} style={styles.whiteFont}>  Sign Up</Text></Text>
-          </View>
+          <Button style={styles.fbBtn} block onPress={this._fbSignIn}>
+            <View style={styles.fbBtnView}>
+              <Icon name="facebook" style={styles.fbBtnIcon} >
+              </Icon>
+              <Text style={styles.fbBtnText}>
+                Login with Facebook
+              </Text>
+            </View>
+          </Button>
         </View>
         <Modal
           visible={this.state.modalVisible}
@@ -110,45 +155,36 @@ var styles = StyleSheet.create({
       width: 150,
       height: 150
     },
-    signin: {
-      backgroundColor: '#6563a4',
-      padding: 25,
-      alignItems: 'center',
-    },
-    signup: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      flex: 1
-    },
     inputs: {
-      backgroundColor: 'rgba(255,255,255,.2)',
       marginTop: 10,
-      flex: .3
-    },
-    inputUsername: {
-      borderWidth: 1,
-      borderColor: 'transparent',
-      borderBottomColor: 'white',
-      height: 60,
-      padding: 10,
-    },
-    inputContainer: {
-      height: 60,
-      padding: 10,
+      flex: .3,
+      padding: 20
     },
     input: {
       flex: 1,
       fontSize: 14
     },
-    forgotContainer: {
-      alignItems: 'flex-end',
-      padding: 15,
+    fbBtn:{
+      backgroundColor: '#3b5998',
+      height: 60,
     },
-    greyFont: {
-      color: '#D8D8D8'
+    fbBtnView:{
+      flex: 1,
+      flexDirection: 'row',
+      position: 'relative',
+      justifyContent: 'center',
+      alignItems: 'center'
     },
-    whiteFont: {
-      color: '#FFF'
+    fbBtnIcon:{
+      paddingLeft: 10,
+      flex: 1,
+      fontSize: 24,
+      color: 'white',
+      },
+    fbBtnText:{
+      flex: 3,
+      color: 'white',
+      fontSize: 16
     }
 })
 module.exports = LoginView

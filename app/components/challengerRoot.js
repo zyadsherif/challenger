@@ -1,10 +1,14 @@
 'use strict';
 import React from 'react';
 import {Navigator, View, Text} from 'react-native';
+import Firebase from 'firebase'
+import config from '../../config.js'
 
+//VIEWS
 import TourView from './tour'
 import LoginView from './login'
 import MainTabs from './mainTabs'
+//VIEWS
 
 const ROUTES = {
   login: LoginView,
@@ -12,13 +16,22 @@ const ROUTES = {
   mainTabs: MainTabs
 }
 
-export default React.createClass({
-  _renderScene(route, navigator) {
+
+
+class ChallengerRoot extends React.Component{
+  constructor(props){
+    super(props)
+    firebase.initializeApp(config);
+
+  }
+
+  _renderScene = (route, navigator) => {
     var Component = ROUTES[route.name];
     return (
       <Component {...route.props} navigator={navigator} route={route} />
     );
-  },
+  }
+  
   render() {
 
     return (
@@ -32,4 +45,6 @@ export default React.createClass({
     );
   }
 
-});
+}
+
+module.exports = ChallengerRoot
